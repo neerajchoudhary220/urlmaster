@@ -5,6 +5,10 @@ from services.cloudflared import get_tunnel
 from fastapi import HTTPException
 import shutil
 import json
+import platform
+import subprocess
+import os
+
 
 def getParentDirectory():
     with open("data.json") as f:
@@ -45,4 +49,26 @@ def cloneDirectory(path: str, new_directory_name: str):
 
     shutil.copytree(source_path, destination_path)
     return f"Directory cloned to {destination_path}"
-    
+
+def open_directory(path: str):
+    path = Path(path).expanduser().resolve()
+
+    if not path.is_dir():
+        raise HTTPException(400,detail=f"Error: '{path}' is not a valid directory.")
+        return
+
+    system_name = platform.system()
+
+    try:
+        if system_name == "Windows":
+            # Works only on Windows
+            os.startfile(path)
+        elif system_name == "Darwin":  # macOS
+            subprocess.run(["open", str(path)])
+        else:  # Linux and other Unix-like systems
+            subprocess.run(["xdg-open", str(path)])
+        print(f"Opened directory: {path}")
+    except Exception as e:
+       raise HTTPException(400,"Invalid action!")
+        
+

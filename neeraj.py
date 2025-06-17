@@ -4,7 +4,7 @@ from typing import Optional
 from config.database import init_db,get_connection
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from services.directory import getDirectoriesList,cloneDirectory,getParentDirectory
+from services.directory import getDirectoriesList,cloneDirectory,open_directory
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
 from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url
@@ -73,6 +73,11 @@ def get_branch_listing():
 def clone_directory(directory_path:str, new_folder_name:str):
     cloneDirectory(directory_path,new_folder_name)
     return {'msg':'Clone successfully'}
+
+@app.get('/directory/open/')
+def open_directory_by_path(path:str):
+    open_directory(path)
+    return {'msg':'Opened'}
     
 @app.get('/git/switch/')
 def git_switch_branch(path,branch):

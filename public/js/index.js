@@ -29,7 +29,7 @@ function fetchList() {
           .join("")}
     </select>
 `;
-        const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span>${dir.name}</span> <i class="fa fa-folder-open text-warning"></i></div> <button class="btn btn-sm btn-secondary text-white clone-directory-btn" data-dir_path="${dir.path}"><i class="fa fa-clone text-white"></i> Clone</button></div>`;
+        const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span style="cursor:pointer;" class="text-primary open-directory" data-dir_path="${dir.path}">${dir.name}</span> <i class="fa fa-folder-open text-warning"></i></div> <button class="btn btn-sm btn-secondary text-white clone-directory-btn" data-dir_path="${dir.path}"><i class="fa fa-clone text-white"></i> Clone</button></div>`;
         const herd_link = dir.herd_link
           ? `<a href="${dir.herd_link}" target="_blank">${dir.herd_link}</a>`
           : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
@@ -251,6 +251,25 @@ $(document).ready(function () {
       complete: function () {
         window.location.reload();
       },
+    });
+  });
+
+  //Open Directory
+  $(document).on("click", ".open-directory", function () {
+    const path = $(this).data("dir_path");
+    $.ajax({
+      method: "GET",
+      url: `${base_url}/directory/open/?path=${path}`,
+      success: function (response) {
+        // alert(response.msg);
+      },
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.detail) {
+          const error_msg = xhr.responseJSON.detail;
+          alert(error_msg);
+        }
+      },
+      complete: function () {},
     });
   });
 });
