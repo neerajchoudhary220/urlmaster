@@ -27,12 +27,15 @@ function fetchList() {
           .join("")}
     </select>
 `;
-
+        const herd_link = dir.herd_link
+          ? `<a href="${dir.herd_link}">${dir.herd_link}</a>`
+          : "--";
         const row = `
                     <tr>
                         <th scope="row">${index + 1}</th>
                         <td>${dir.name}</td>
                         <td>${branchDropdown}</td>
+                        <td>${herd_link}</td>
                         <td>
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-outline-primary">Generate URL</button>

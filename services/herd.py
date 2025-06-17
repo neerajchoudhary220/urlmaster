@@ -31,17 +31,19 @@ def extract_sites_and_paths():
         })
     return sites
 
-def get_link(path:str):
+def get_herd_link(path:str):
     sites = extract_sites_and_paths()
     return next((site['url'] for site in sites if site['path'] == path), None)
 
-def add_new_link(path:str):
+def add_new_herd_link(path:str):
     sites = extract_sites_and_paths()
+    #check if already link available
     exist_path = any(site['path'] == path for site in sites)
     if exist_path:
-        raise HTTPException(400,detail="Link is aviailable already for this path!")
+        return get_herd_link(path)
+    
     result =subprocess.run(['herd','link',path])
     if result.returncode !=0:
         raise HTTPException(400,detail="Something is went wrong!")
     
-    return get_link(path)
+    return get_herd_link(path)

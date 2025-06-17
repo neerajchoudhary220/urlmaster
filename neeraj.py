@@ -72,7 +72,6 @@ def get_branch_listing():
 
 @app.get('/git/switch/')
 def git_switch_branch(path,branch):
-    print("working")
     msg = switch_branch(path,branch)
     return {"msg":msg}
     
