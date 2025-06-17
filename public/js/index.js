@@ -1,4 +1,7 @@
 const base_url = "http://127.0.0.1:8090";
+const getHerdLink = (selector) => {
+  return selector.data("herd_link");
+};
 function fetchList() {
   $.ajax({
     method: "GET",
@@ -9,7 +12,6 @@ function fetchList() {
       tbody.empty();
 
       directories.forEach((dir, index) => {
-        // Create <option> list with active branch selected
         const branchDropdown = `
     <select class="form-select form-select-sm w-75 branch-dropdown" data-path="${
       dir.path
@@ -29,19 +31,39 @@ function fetchList() {
 `;
         const herd_link = dir.herd_link
           ? `<a href="${dir.herd_link}">${dir.herd_link}</a>`
-          : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add With Herd</button>`;
-        const generate_url = `<div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary">Generate URL</button>
-                            </div>`;
+          : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
+        let generate_url = "";
+
+        if (dir.public_url) {
+          generate_url = `<a href="${dir.public_url}">${dir.public_url}</a>`;
+        } else if (dir.herd_link) {
+          generate_url = `
+    <div class="btn-group">
+      <button class="btn btn-sm btn-outline-primary genereate-public-url-btn" data-herd_link="${dir.herd_link}">
+        Generate Public URL
+      </button>
+    </div>`;
+        } else {
+          generate_url = `
+    <div class="alert alert-danger p-0 p-1 mt-3 w-75" role="alert">
+      Herd link is not available!
+    </div>`;
+        }
+        const regenerate_public_url = dir.public_url
+          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
+          : "--";
+        const delete_public_url = dir.public_url
+          ? `<button class="btn btn-danger ms-2 delete-url-btn text-white" data-herd_link="${dir.herd_link}"><i class="fa fa-trash text-white"></i></button>`
+          : "";
         const row = `
                     <tr>
                         <th scope="row">${index + 1}</th>
                         <td>${dir.name}</td>
                         <td>${branchDropdown}</td>
                         <td>${herd_link}</td>
-                        <td>${generate_url}</td>
+                        <td><div class="w-75">${generate_url}</div></td>
                         <td>
-                            --
+                          <div class='d-flex w-100'>${regenerate_public_url} ${delete_public_url}</div>
                         </td>
                     </tr>
                 `;
@@ -51,6 +73,33 @@ function fetchList() {
     },
     error: function (err) {
       console.error("Failed to load directories:", err);
+    },
+  });
+}
+
+function generatePublicUrl(this_, herd_link) {
+  $.ajax({
+    method: "get",
+    url: `${base_url}/cloudflared/?herd_link=${herd_link}`,
+    beforeSend: function () {
+      const waiting_msg = `<div class="alert alert-warning p-0 p-1 mt-3 w-75" role="alert">
+ Please wait...
+</div`;
+      this_.addClass("d-none");
+      this_.parent().html(waiting_msg);
+    },
+    success: function (response) {
+      alert(response.msg);
+    },
+
+    error: function (xhr) {
+      if (xhr.responseJSON && xhr.responseJSON.detail) {
+        const error_msg = xhr.responseJSON.detail;
+        alert(error_msg);
+      }
+    },
+    complete: function () {
+      window.location.reload();
     },
   });
 }
@@ -119,6 +168,46 @@ $(document).ready(function () {
       method: "get",
       url: `${base_url}/herd/?directory_path=${dir_path}`,
 
+      success: function (response) {
+        alert(response.msg);
+      },
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.detail) {
+          const error_msg = xhr.responseJSON.detail;
+          alert(error_msg);
+        }
+      },
+      complete: function () {
+        window.location.reload();
+      },
+    });
+  });
+
+  //Generate Public URL
+  $(document).on("click", ".genereate-public-url-btn", function () {
+    const this_ = $(this);
+    generatePublicUrl(this_, getHerdLink(this_));
+  });
+
+  //Regenerate Public URL
+  $(document).on("click", ".regenerate-public-url-btn", function () {
+    const this_ = $(this);
+    generatePublicUrl(this_, getHerdLink(this_));
+  });
+
+  //delete Public URL
+  $(document).on("click", ".delete-url-btn", function () {
+    const this_ = $(this);
+    $.ajax({
+      method: "DELETE",
+      url: `${base_url}/cloudflared/?herd_link=${getHerdLink(this_)}`,
+      beforeSend: function () {
+        const waiting_msg = `<div class="alert alert-warning p-0 p-1 mt-3 w-75" role="alert">
+ Please wait...
+</div`;
+        this_.addClass("d-none");
+        this_.parent().html(waiting_msg);
+      },
       success: function (response) {
         alert(response.msg);
       },

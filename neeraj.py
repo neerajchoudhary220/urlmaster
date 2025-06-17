@@ -7,6 +7,7 @@ from pathlib import Path
 from services.directory import getDirectoriesList
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
+from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url
 app = FastAPI()
 init_db() #Initialize Database
 
@@ -90,6 +91,17 @@ def git_switch_branch(path,branch):
 def add_herd_link(directory_path:str):
     link_with_herd(Path(directory_path))
     return {'msg':"New link has been created"}
+
+@app.get('/cloudflared/')
+def add_herd_link(herd_link:str):
+    public_url = get_cloudflared_public_url(herd_link)
+    return {'msg':'Public URL generated successfully','public_url':public_url}
+
+@app.delete('/cloudflared/')
+def delete_cloudflared_tunnel(herd_link:str):
+    kill_tunnel_by_url(herd_link)
+    return {"msg":"Dleted Public URL successfully"}
+    
     
     
     

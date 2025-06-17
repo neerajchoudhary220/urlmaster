@@ -1,41 +1,4 @@
-# start_tunnel.py
-import subprocess
-import re
-import json
-import os
+from services.cloudflared import get_tunnel
 
-TUNNELS_FILE = "active_tunnels.json"
-
-def run_cloudflared(url:str):
-    process = subprocess.Popen(
-        ["cloudflared", "tunnel", "--url", url],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True
-    )
-
-    for line in process.stdout:
-        print(line.strip())  # Optional
-        match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
-        if match:
-            public_url = match.group(1)
-            print("\n🌐 Public Tunnel URL:", public_url)
-
-            # ✅ Save URL and PID
-            tunnel_info = {"url": public_url, "pid": process.pid,"herd_link":url}
-            save_tunnel(tunnel_info)
-            break
-
-def save_tunnel(tunnel_info):
-    if os.path.exists(TUNNELS_FILE):
-        with open(TUNNELS_FILE, "r") as f:
-            tunnels = json.load(f)
-    else:
-        tunnels = []
-
-    tunnels.append(tunnel_info)
-
-    with open(TUNNELS_FILE, "w") as f:
-        json.dump(tunnels, f, indent=2)
-
-run_cloudflared()
+public_url  = get_tunnel('http://laravel_test1.test')
+print(public_url)
