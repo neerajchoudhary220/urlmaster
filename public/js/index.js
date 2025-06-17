@@ -2,6 +2,15 @@ const base_url = "http://127.0.0.1:8090";
 const getHerdLink = (selector) => {
   return selector.data("herd_link");
 };
+const copyLink = (contents) => {
+  // Create a temporary input element
+  var $temp = $("<input>");
+  $("body").append($temp);
+  $temp.val(`${contents}`).select();
+  document.execCommand("copy");
+  $temp.remove();
+  alert("Text copied to clipboard!");
+};
 function fetchList() {
   $.ajax({
     method: "GET",
@@ -31,12 +40,12 @@ function fetchList() {
 `;
         const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span style="cursor:pointer;" class="text-primary open-directory" data-dir_path="${dir.path}">${dir.name}</span> <i class="fa fa-folder-open text-warning"></i></div> <button class="btn btn-sm btn-secondary text-white clone-directory-btn" data-dir_path="${dir.path}"><i class="fa fa-clone text-white"></i> Clone</button></div>`;
         const herd_link = dir.herd_link
-          ? `<a href="${dir.herd_link}" target="_blank">${dir.herd_link}</a>`
+          ? `<div class="d-flex justify-content-start"><a href="${dir.herd_link}" target="_blank" class="me-auto">${dir.herd_link}</a><button class="btn btn-sm btn-secondary copy-herd-link-btn"><i class="fa fa-clone"></i></button></div>`
           : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
         let generate_url = "";
 
         if (dir.public_url) {
-          generate_url = `<a href="${dir.public_url}" target="_blank">${dir.public_url}</a>`;
+          generate_url = `<div class="d-flex justify-content-start"><a href="${dir.public_url}" target="_blank" class="me-auto">${dir.public_url}</a> <button class="btn btn-sm btn-secondary copy-public-url-btn"><i class="fa fa-clone"></i></button></div>`;
         } else if (dir.herd_link) {
           generate_url = `
     <div class="btn-group">
@@ -272,4 +281,12 @@ $(document).ready(function () {
       complete: function () {},
     });
   });
+
+  $(document).on(
+    "click",
+    ".copy-herd-link-btn, .copy-public-url-btn",
+    function () {
+      copyLink($(this).parent().find("a").text());
+    }
+  );
 });
