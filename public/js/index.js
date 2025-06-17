@@ -29,17 +29,19 @@ function fetchList() {
 `;
         const herd_link = dir.herd_link
           ? `<a href="${dir.herd_link}">${dir.herd_link}</a>`
-          : "--";
+          : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add With Herd</button>`;
+        const generate_url = `<div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary">Generate URL</button>
+                            </div>`;
         const row = `
                     <tr>
                         <th scope="row">${index + 1}</th>
                         <td>${dir.name}</td>
                         <td>${branchDropdown}</td>
                         <td>${herd_link}</td>
+                        <td>${generate_url}</td>
                         <td>
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary">Generate URL</button>
-                            </div>
+                            --
                         </td>
                     </tr>
                 `;
@@ -105,6 +107,29 @@ $(document).ready(function () {
           window.location.reload();
         } else {
         }
+      },
+    });
+  });
+
+  //Add with Herd
+  $(document).on("click", ".add-with-herd-btn", function () {
+    const dir_path = $(this).data("path");
+
+    $.ajax({
+      method: "get",
+      url: `${base_url}/herd/?directory_path=${dir_path}`,
+
+      success: function (response) {
+        alert(response.msg);
+      },
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.detail) {
+          const error_msg = xhr.responseJSON.detail;
+          alert(error_msg);
+        }
+      },
+      complete: function () {
+        window.location.reload();
       },
     });
   });

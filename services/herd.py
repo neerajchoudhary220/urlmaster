@@ -33,17 +33,26 @@ def extract_sites_and_paths():
 
 def get_herd_link(path:str):
     sites = extract_sites_and_paths()
-    return next((site['url'] for site in sites if site['path'] == path), None)
-
-def add_new_herd_link(path:str):
-    sites = extract_sites_and_paths()
-    #check if already link available
+    #Check if already link available
     exist_path = any(site['path'] == path for site in sites)
-    if exist_path:
-        return get_herd_link(path)
+    if  exist_path:
+        return next((site['url'] for site in sites if site['path'] == path), None)
+
+def link_with_herd(path: str):
+    try:
+        result = subprocess.run(
+            ['herd', 'link'],
+            cwd=path,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            raise HTTPException(status_code=400, detail=result.stderr.strip() or "herd link failed")
+    except FileNotFoundError:
+        raise HTTPException(status_code=400, detail="'herd' command not found")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
-    result =subprocess.run(['herd','link',path])
-    if result.returncode !=0:
-        raise HTTPException(400,detail="Something is went wrong!")
-    
-    return get_herd_link(path)
+    return get_herd_link(path)  # This is now properly reached
+
+   

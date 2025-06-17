@@ -1,11 +1,12 @@
 from fastapi import FastAPI,HTTPException
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel,validator
+from typing import Optional
 from config.database import init_db,get_connection
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from services.directory import getDirectoriesList
 from services.gitoperations import switch_branch
+from services.herd import link_with_herd
 app = FastAPI()
 init_db() #Initialize Database
 
@@ -24,8 +25,17 @@ def raiseError(msg:str):
 class ParentDirectories(BaseModel):
     path: str
     status: bool
-
-   
+# class DirectoryPath(BaseModel):
+#     path: str
+#     @validator('path')
+#     def check_path(cls, value: str) -> str:
+#         p = Path(value)
+#         if not p.exists() or not p.is_dir():
+#             raise ValueError("Invalid directory path!")
+#         return value
+        
+        
+    
 @app.get("/")
 def read_root():
     return "working"
@@ -75,6 +85,11 @@ def git_switch_branch(path,branch):
     msg = switch_branch(path,branch)
     return {"msg":msg}
     
+    
+@app.get('/herd/')
+def add_herd_link(directory_path:str):
+    link_with_herd(Path(directory_path))
+    return {'msg':"New link has been created"}
     
     
     
