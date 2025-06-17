@@ -4,7 +4,7 @@ from typing import Optional
 from config.database import init_db,get_connection
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from services.directory import getDirectoriesList
+from services.directory import getDirectoriesList,cloneDirectory,getParentDirectory
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
 from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url
@@ -23,7 +23,7 @@ def raiseError(msg:str):
     raise HTTPException(status_code=400,detail=msg)
 
  
-class ParentDirectories(BaseModel):
+class DirectoryPath(BaseModel):
     path: str
     status: bool
 # class DirectoryPath(BaseModel):
@@ -42,7 +42,7 @@ def read_root():
     return "working"
 
 @app.post("/directory/")
-def set_parent_directory(directory: ParentDirectories):
+def set_parent_directory(directory: DirectoryPath):
     path = Path(directory.path)
     if not path.exists() and not path.is_dir():
         raiseError("Invalid directory path!")
@@ -67,20 +67,13 @@ def set_parent_directory(directory: ParentDirectories):
 
 @app.get('/directory/')
 def get_branch_listing():
-    conn = get_connection()
-    cursor = conn.cursor()
-    q = """SELECT path FROM parent_directories WHERE status=1"""
-    cursor.execute(q)
-    row = cursor.fetchone()
-    conn.close()
-    if row:
-        path = row[0]
-        directories = getDirectoriesList(path)
-        
-        return {"data":directories}
-    else:
-        raiseError("Directories is not found!")
+    return {"data":getDirectoriesList()}
 
+@app.get('/directory/clone/')
+def clone_directory(directory_path:str, new_folder_name:str):
+    cloneDirectory(directory_path,new_folder_name)
+    return {'msg':'Clone successfully'}
+    
 @app.get('/git/switch/')
 def git_switch_branch(path,branch):
     msg = switch_branch(path,branch)

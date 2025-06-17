@@ -29,13 +29,14 @@ function fetchList() {
           .join("")}
     </select>
 `;
+        const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span>${dir.name}</span> <i class="fa fa-folder-open text-warning"></i></div> <button class="btn btn-sm btn-secondary text-white clone-directory-btn" data-dir_path="${dir.path}"><i class="fa fa-clone text-white"></i> Clone</button></div>`;
         const herd_link = dir.herd_link
-          ? `<a href="${dir.herd_link}">${dir.herd_link}</a>`
+          ? `<a href="${dir.herd_link}" target="_blank">${dir.herd_link}</a>`
           : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
         let generate_url = "";
 
         if (dir.public_url) {
-          generate_url = `<a href="${dir.public_url}">${dir.public_url}</a>`;
+          generate_url = `<a href="${dir.public_url}" target="_blank">${dir.public_url}</a>`;
         } else if (dir.herd_link) {
           generate_url = `
     <div class="btn-group">
@@ -50,7 +51,7 @@ function fetchList() {
     </div>`;
         }
         const regenerate_public_url = dir.public_url
-          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
+          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
           : "--";
         const delete_public_url = dir.public_url
           ? `<button class="btn btn-danger ms-2 delete-url-btn text-white" data-herd_link="${dir.herd_link}"><i class="fa fa-trash text-white"></i></button>`
@@ -58,7 +59,7 @@ function fetchList() {
         const row = `
                     <tr>
                         <th scope="row">${index + 1}</th>
-                        <td>${dir.name}</td>
+                        <td>${directory}</td>
                         <td>${branchDropdown}</td>
                         <td>${herd_link}</td>
                         <td><div class="w-75">${generate_url}</div></td>
@@ -208,6 +209,36 @@ $(document).ready(function () {
         this_.addClass("d-none");
         this_.parent().html(waiting_msg);
       },
+      success: function (response) {
+        alert(response.msg);
+      },
+      error: function (xhr) {
+        if (xhr.responseJSON && xhr.responseJSON.detail) {
+          const error_msg = xhr.responseJSON.detail;
+          alert(error_msg);
+        }
+      },
+      complete: function () {
+        window.location.reload();
+      },
+    });
+  });
+
+  //clone directory
+  $(document).on("click", ".clone-directory-btn", function () {
+    const dir_path = $(this).data("dir_path");
+    $("#dir_path").val(dir_path);
+    $("#cloneDirectoryModal").modal("show");
+  });
+
+  $("#clone_dir_form").on("submit", function (e) {
+    e.preventDefault(); // Prevent the default form submission
+    let newDirName = $("#new_dir_name").val(); // Get input value
+    const dir_path = $("#dir_path").val();
+
+    $.ajax({
+      method: "GET",
+      url: `${base_url}/directory/clone/?directory_path=${dir_path}&new_folder_name=${newDirName}`,
       success: function (response) {
         alert(response.msg);
       },

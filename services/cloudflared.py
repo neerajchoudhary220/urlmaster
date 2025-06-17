@@ -113,12 +113,7 @@ def save_tunnel(tunnel_info: dict) -> str:
 
 
 def kill_tunnel_by_url(herd_link: str):
-    """
-    Kills the tunnel process by herd_link and removes its entry from the JSON file.
-
-    Args:
-        herd_link (str): The unique identifier for the tunnel (herd_link).
-    """
+    
     if not os.path.exists(TUNNELS_FILE):
         print("No active tunnels found.")
         return
@@ -137,9 +132,7 @@ def kill_tunnel_by_url(herd_link: str):
         if tunnel["herd_link"] == herd_link:
             try:
                 os.kill(tunnel["pid"], signal.SIGTERM)
-                # print(f"✅ Killed tunnel: {tunnel['herd_link']} (PID {tunnel['pid']})")
                 killed = True
-                return True
             except ProcessLookupError:
                 HTTPException(400,detail=f"⚠️ Process already dead for: {tunnel['herd_link']}")
         else:
@@ -150,8 +143,8 @@ def kill_tunnel_by_url(herd_link: str):
         json.dump(updated_tunnels, f, indent=2)
 
     if not killed:
-        updated_tunnels.append(tunnel)
         raise HTTPException(400,detail="Not tunnel active right now")
+    return True
 
 def get_tunnel(herd_link: str, file_path: str = 'active_tunnels.json') -> str | None:
         if not os.path.exists(TUNNELS_FILE):
