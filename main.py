@@ -6,9 +6,11 @@ from services.directory import getDirectoriesList,cloneDirectory,open_directory,
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
 from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url,replace_env_values
+from fastapi.staticfiles import StaticFiles
 import os
 app = FastAPI()
-
+# public_dir = Path(__file__).resolve().parent / "public"
+# app.mount("/", StaticFiles(directory=public_dir, html=True), name="static")
 
 app.add_middleware(
     CORSMiddleware,

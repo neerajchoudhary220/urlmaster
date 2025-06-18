@@ -80,7 +80,7 @@ def run_fastapi():
     print("✅ FastAPI started in background.")
     
 def run_frontend():
-    subprocess.Popen(["python3", "-m", "http.server", "8080"], cwd=STATIC_DIR)
+    subprocess.Popen(["python", "-m", "http.server", "8080"], cwd=STATIC_DIR)
 
 def open_browser():
     webbrowser.open("http://localhost:8080")
