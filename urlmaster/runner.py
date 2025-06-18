@@ -6,10 +6,17 @@ import webbrowser
 import socket
 import signal
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+def find_base_dir(project_root_name="url_master") -> Path:
+    path = Path(__file__).resolve()
+    while path.name != project_root_name and path != path.parent:
+        path = path.parent
+    return path
+
+BASE_DIR = find_base_dir("url_master")
 INSTALL_DIR = BASE_DIR / "install"
 STATIC_DIR = BASE_DIR / "public"
 MAIN_APP_PATH = BASE_DIR / "main.py"
+
 def install_service():
     system = platform.system()
     cwd = str(BASE_DIR)
