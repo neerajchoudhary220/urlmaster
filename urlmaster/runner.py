@@ -6,11 +6,15 @@ import webbrowser
 import socket
 import signal
 import importlib.resources as resources
+import shutil
+
 BASE_DIR = Path(resources.files("urlmaster"))
 
 INSTALL_DIR = BASE_DIR / "install"
 STATIC_DIR = BASE_DIR / "public"
 MAIN_APP_PATH = BASE_DIR / "main.py"
+
+
 def install_service():
     system = platform.system()
     cwd = str(BASE_DIR)
@@ -72,15 +76,18 @@ def run_fastapi():
         # print(f"⚠️ FastAPI already running on http://127.0.0.1:{port}")
         return
 
-    print(f"🚀 Starting FastAPI on http://127.0.0.1:{port} ...")
+    # print(f"🚀 Starting FastAPI on http://127.0.0.1:{port} ...")
+    uvicorn_path = shutil.which("uvicorn")
+    
     subprocess.Popen([
-        "uvicorn", 
+        uvicorn_path, 
         "main:app",  
         "--host", "127.0.0.1",
         "--port", str(port),
         "--reload"
-    ], cwd=BASE_DIR)
-    print("✅ FastAPI started in background.")
+    ], cwd=BASE_DIR,stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL)
+    # print("✅ FastAPI started in background.")
 def get_pid_on_port(port: int) -> int | None:
     """Find the PID using the given port (macOS/Linux only)"""
     try:
@@ -97,7 +104,7 @@ def get_pid_on_port(port: int) -> int | None:
 def kill_process_on_port(port: int):
     pid = get_pid_on_port(port)
     if pid:
-        print(f"🔪 Killing process {pid} using port {port}...")
+        # print(f"🔪 Killing process {pid} using port {port}...")
         os.kill(pid, signal.SIGKILL)
         # print("✅ Port cleared.")
     # else:

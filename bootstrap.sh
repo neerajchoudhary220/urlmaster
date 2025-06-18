@@ -33,17 +33,17 @@ pip install -r requirements.txt
 # --- Step 3: Install the CLI tool (inside the virtual env) ---
 pip install .
 
-# # --- Step 4: Create a global symlink ---
-# BIN_PATH="$(pwd)/.venv/bin/urlmaster"
-# LINK_PATH="/usr/local/bin/urlmaster"
+# --- Step 4: Create a global symlink ---
+BIN_PATH="$(pwd)/.venv/bin/urlmaster"
+LINK_PATH="/usr/local/bin/urlmaster"
 
-# if [ -L "$LINK_PATH" ] || [ -f "$LINK_PATH" ]; then
-#     echo "🔁 Removing existing global 'urlmaster' link..."
-#     sudo rm -f "$LINK_PATH"
-# fi
+if [ -L "$LINK_PATH" ] || [ -f "$LINK_PATH" ]; then
+    echo "🔁 Removing existing global 'urlmaster' link..."
+    sudo rm -f "$LINK_PATH"
+fi
 
-# echo "🔗 Linking $BIN_PATH → $LINK_PATH"
-# sudo ln -s "$BIN_PATH" "$LINK_PATH"
+echo "🔗 Linking $BIN_PATH → $LINK_PATH"
+sudo ln -s "$BIN_PATH" "$LINK_PATH"
 
-# echo -e "\033[92m✅ URL Master installed Successfully!\033[0m"
-# echo "👉 Now you can run: urlmaster start"
+echo -e "\033[92m✅ URL Master installed Successfully!\033[0m"
+echo "👉 Now you can run: urlmaster start"
