@@ -53,7 +53,7 @@ function fetchList() {
         } else if (dir.herd_link) {
           generate_url = `
     <div class="btn-group">
-      <button class="btn btn-sm btn-outline-primary genereate-public-url-btn" data-herd_link="${dir.herd_link}">
+      <button class="btn btn-sm btn-outline-primary genereate-public-url-btn" data-dir-path="${dir.path}" data-herd_link="${dir.herd_link}">
         Generate Public URL
       </button>
     </div>`;
@@ -64,7 +64,7 @@ function fetchList() {
     </div>`;
         }
         const regenerate_public_url = dir.public_url
-          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
+          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-dir-path="${dir.path} data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
           : "--";
         const delete_public_url = dir.public_url
           ? `<button class="btn btn-danger ms-2 delete-url-btn text-white" data-herd_link="${dir.herd_link}"><i class="fa fa-trash text-white"></i></button>`
@@ -94,7 +94,9 @@ function fetchList() {
 function generatePublicUrl(this_, herd_link) {
   $.ajax({
     method: "get",
-    url: `${base_url}/cloudflared/?herd_link=${herd_link}`,
+    url: `${base_url}/cloudflared/?herd_link=${herd_link}&dir_path=${this_.attr(
+      "data-dir-path"
+    )}`,
     beforeSend: function () {
       const waiting_msg = `<div class="alert alert-warning p-0 p-1 mt-3 w-75" role="alert">
  Please wait...

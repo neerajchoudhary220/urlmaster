@@ -7,7 +7,8 @@ from pathlib import Path
 from services.directory import getDirectoriesList,cloneDirectory,open_directory,addParentDirectory
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
-from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url
+from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url,replace_env_values
+import os
 app = FastAPI()
 init_db() #Initialize Database
 
@@ -71,8 +72,12 @@ def add_herd_link(directory_path:str):
     return {'msg':"New link has been created"}
 
 @app.get('/cloudflared/')
-def add_herd_link(herd_link:str):
+def add_herd_link(herd_link:str,dir_path:str):
+    if not os.path.exists(dir_path):
+        raiseError("Invalid Directory Path")
+        
     public_url = get_cloudflared_public_url(herd_link)
+    replace_env_values(dir_path,public_url)
     return {'msg':'Public URL generated successfully','public_url':public_url}
 
 @app.delete('/cloudflared/')

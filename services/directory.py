@@ -9,7 +9,6 @@ import platform
 import subprocess
 import os
 
-
 def addParentDirectory(parent_dir:str):
     if len(parent_dir) == 0:
         raise HTTPException(400,detail="Directory can't be empty")
@@ -94,5 +93,11 @@ def open_directory(path: str):
         print(f"Opened directory: {path}")
     except Exception as e:
        raise HTTPException(400,"Invalid action!")
-        
+
+
+
+# Example usage
+# ngrok_public_url = get_ngrok_public_url()
+# replace_env_values("/Volumes/Sembark/sembark/sembark-apis/.env", new_domain=ngrok_public_url)
+   
 

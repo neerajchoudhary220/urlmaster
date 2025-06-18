@@ -5,6 +5,7 @@ import json
 import os
 import signal
 from fastapi import HTTPException
+import re
 
 TUNNELS_FILE = "active_tunnels.json"
 
@@ -28,6 +29,7 @@ def get_cloudflared_public_url(url:str):
             tunnel_info = {"public_url": public_url, "pid": process.pid,"herd_link":url}
             save_tunnel(tunnel_info)
             break
+    return tunnel_info['public_url']
 
 def save_tunnel(tunnel_info: dict) -> str:
     """
@@ -61,55 +63,6 @@ def save_tunnel(tunnel_info: dict) -> str:
 
     with open(TUNNELS_FILE, "w") as f:
         json.dump(tunnels, f, indent=2)
-
-    return tunnel_info['public_url']
-
-# def save_tunnel(tunnel_info):
-#     if os.path.exists(TUNNELS_FILE):
-#         with open(TUNNELS_FILE, "r") as f:
-#             tunnels = json.load(f)
-#     else:
-#         tunnels = []
-
-#     tunnels.append(tunnel_info)
-
-#     with open(TUNNELS_FILE, "w") as f:
-#         json.dump(tunnels, f, indent=2)
-    
-#     return tunnel_info['public_url']
-
-
-
-# def kill_tunnel_by_url(herd_link:str):
-#     if not os.path.exists(TUNNELS_FILE):
-#         print("No active tunnels found.")
-#         return
-
-#     with open(TUNNELS_FILE, "r") as f:
-#         tunnels = json.load(f)
-
-#     updated_tunnels = []
-#     killed = False
-
-#     for tunnel in tunnels:
-#         if tunnel["herd_link"] == herd_link:
-#             try:
-#                 os.kill(tunnel["pid"], signal.SIGTERM)
-#                 print(f"✅ Killed tunnel: {tunnel['herd_link']} (PID {tunnel['pid']})")
-#                 killed = True
-#             except ProcessLookupError:
-#                 print(f"⚠️ Process already dead for: {tunnel['url']}")
-#         else:
-#             updated_tunnels.append(tunnel)
-
-#     # Update file with remaining tunnels
-#     with open(TUNNELS_FILE, "w") as f:
-#         json.dump(updated_tunnels, f, indent=2)
-
-#     if not killed:
-#         print("❌ No tunnel found with the specified URL.")
-
-
 
 
 def kill_tunnel_by_url(herd_link: str):
@@ -158,3 +111,37 @@ def get_tunnel(herd_link: str, file_path: str = 'active_tunnels.json') -> str | 
 
         return None
 
+def replace_env_values(dir_path:str, new_domain:str):
+    env_path = f"{dir_path}/.env"
+    with open(env_path, "r") as f:
+        lines = f.readlines()
+
+    updated_lines = []
+    domain = new_domain.replace("http://", "").replace("https://", "")
+    
+    for line in lines:
+        #APP_URL
+        if line.startswith("APP_URL="):
+            updated_lines.append(f'APP_URL="{new_domain}"\n')
+            
+        # APP_PUBLIC_URL
+        elif line.startswith("APP_PUBLIC_URL="):
+            updated_lines.append(f'APP_PUBLIC_URL="{new_domain}"\n')
+
+        # SESSION_DOMAIN
+        elif line.startswith("SESSION_DOMAIN="):
+            updated_lines.append(f'SESSION_DOMAIN={domain}\n')
+
+        # SANCTUM_STATEFUL_DOMAINS
+        elif line.startswith("SANCTUM_STATEFUL_DOMAINS="):
+            parts = line.strip().split("=")[1].split(",")
+            new_parts = [p for p in parts if "trycloudflare.com" not in p]
+            if domain not in new_parts:
+                new_parts.append(domain)
+            updated_lines.append(f"SANCTUM_STATEFUL_DOMAINS={','.join(new_parts)}\n")
+
+        else:
+            updated_lines.append(line)
+
+    with open(env_path, "w") as f:
+        f.writelines(updated_lines)
