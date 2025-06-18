@@ -1,0 +1,16 @@
+[Unit]
+Description=URL Master FastAPI + Frontend
+After=network.target
+
+[Service]
+WorkingDirectory={{WORKING_DIR}}
+ExecStart=/bin/bash -c '
+  source .venv/bin/activate &&
+  python3 main.py &
+  cd public && python3 -m http.server 8080
+'
+Restart=always
+User={{USER}}
+
+[Install]
+WantedBy=multi-user.target

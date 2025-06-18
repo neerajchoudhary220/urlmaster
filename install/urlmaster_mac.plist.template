@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.neeraj.urlmaster</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>
+            cd {{WORKING_DIR}} &&
+            source .venv/bin/activate &&
+            python3 main.py &
+            cd public && python3 -m http.server 8080
+        </string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>{{WORKING_DIR}}</string>
+    <key>StandardOutPath</key>
+    <string>/tmp/urlmaster.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/urlmaster.err</string>
+</dict>
+</plist>
