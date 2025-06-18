@@ -14,7 +14,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "urlmaster = urlmaster.cli:app"
+            "urlmaster = urlmaster.cli:main"
         ]
     },
     classifiers=[

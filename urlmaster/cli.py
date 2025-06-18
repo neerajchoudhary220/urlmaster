@@ -7,6 +7,13 @@ app = typer.Typer()
 def install_service():
     """Install URL Master as a background service"""
     runner.install_service()
-
+@app.command()
+def neeraj():
+    print("wporking")
+@app.command()
+def start():
+    """Start URL Master"""
+    runner.run_fastapi()
+    runner.open_browser()
 if __name__ == "__main__":
     app()

@@ -11,7 +11,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Install CLI
-pip install -e .
+pip install . --user
 
 echo "✅ URL Master installed!"
-echo "Use: urlmaster run"
+echo "Use: urlmaster start"

@@ -2,10 +2,12 @@ import os
 import subprocess
 import platform
 from pathlib import Path
-
+import webbrowser
+import socket
 BASE_DIR = Path(__file__).resolve().parent.parent
 INSTALL_DIR = BASE_DIR / "install"
-
+STATIC_DIR = BASE_DIR / "public"
+MAIN_APP_PATH = BASE_DIR / "main.py"
 def install_service():
     system = platform.system()
     cwd = str(BASE_DIR)
@@ -54,3 +56,31 @@ def install_service():
 
     else:
         print("❌ Unsupported operating system.")
+
+
+def is_port_in_use(port: int) -> bool:
+    """Check if a given port is already in use"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("127.0.0.1", port)) == 0
+
+def run_fastapi():
+    port = 8090
+    if is_port_in_use(port):
+        print(f"⚠️ FastAPI already running on http://127.0.0.1:{port}")
+        return
+
+    print(f"🚀 Starting FastAPI on http://127.0.0.1:{port} ...")
+    subprocess.Popen([
+        "uvicorn", 
+        "main:app",  
+        "--host", "127.0.0.1",
+        "--port", str(port),
+        "--reload"
+    ], cwd=BASE_DIR)
+    print("✅ FastAPI started in background.")
+    
+def run_frontend():
+    subprocess.Popen(["python3", "-m", "http.server", "8080"], cwd=STATIC_DIR)
+
+def open_browser():
+    webbrowser.open("http://localhost:8080")
