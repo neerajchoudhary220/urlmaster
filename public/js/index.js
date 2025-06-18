@@ -1,4 +1,5 @@
 const base_url = "http://127.0.0.1:8090";
+const open_parent_dir = $("#open-parent-dir");
 const getHerdLink = (selector) => {
   return selector.data("herd_link");
 };
@@ -21,6 +22,9 @@ function fetchList() {
       tbody.empty();
 
       directories.forEach((dir, index) => {
+        open_parent_dir
+          .attr("data-dir_path", dir.parent_dir)
+          .text(dir.parent_dir_name);
         const branchDropdown = `
     <select class="form-select form-select-sm w-75 branch-dropdown" data-path="${
       dir.path
@@ -119,15 +123,20 @@ $(document).ready(function () {
 
   //click to Add Parent Directory Button
   $("#add_parent_directory_btn").on("click", function () {
-    $(this).addClass("d-none");
+    $(this).parent().addClass("d-none");
     $("#add_parent_directory_group").removeClass("d-none");
+  });
+
+  //Click To Close Parent Dir Btn
+  $("#close-add-parent-dir").on("click", function () {
+    $("#add_parent_directory_group").addClass("d-none");
+    $("#add_parent_directory_btn").parent().removeClass("d-none");
   });
 
   //Add parent directory
   $("#add").on("click", function () {
     const data_ = {
       path: $("#parent_directory_path").val(),
-      status: 1,
     };
     $.ajax({
       url: `${base_url}/directory/`,
@@ -264,7 +273,7 @@ $(document).ready(function () {
   });
 
   //Open Directory
-  $(document).on("click", ".open-directory", function () {
+  $(document).on("click", ".open-directory,#open-parent-dir", function () {
     const path = $(this).data("dir_path");
     $.ajax({
       method: "GET",

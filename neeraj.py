@@ -4,7 +4,7 @@ from typing import Optional
 from config.database import init_db,get_connection
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from services.directory import getDirectoriesList,cloneDirectory,open_directory
+from services.directory import getDirectoriesList,cloneDirectory,open_directory,addParentDirectory
 from services.gitoperations import switch_branch
 from services.herd import link_with_herd
 from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url
@@ -25,7 +25,6 @@ def raiseError(msg:str):
  
 class DirectoryPath(BaseModel):
     path: str
-    status: bool
 # class DirectoryPath(BaseModel):
 #     path: str
 #     @validator('path')
@@ -43,27 +42,8 @@ def read_root():
 
 @app.post("/directory/")
 def set_parent_directory(directory: DirectoryPath):
-    path = Path(directory.path)
-    if not path.exists() and not path.is_dir():
-        raiseError("Invalid directory path!")
-        
-    conn = get_connection()
-    cursor = conn.cursor()
-    normalize_path = directory.path
-    # Check if normalized name already exists (case-insensitive)
-    cursor.execute("SELECT id FROM parent_directories WHERE path = ?", (normalize_path,))
-    existing = cursor.fetchone()
-    if existing:
-        conn.close()
-        raiseError("This name is already used.")
-
-    # Insert normalized name
-    q = "INSERT INTO parent_directories (path, status) VALUES (?, ?)"
-    cursor.execute(q, (normalize_path, directory.status))
-    conn.commit()
-    directory_id = cursor.lastrowid
-    conn.close()
-    return {"id": directory_id, "path": normalize_path, "status": directory.status}
+    addParentDirectory(directory.path)
+    return {"msg":"Added Parent Directory Successfully!"}
 
 @app.get('/directory/')
 def get_branch_listing():

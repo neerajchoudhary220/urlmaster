@@ -10,6 +10,29 @@ import subprocess
 import os
 
 
+def addParentDirectory(parent_dir:str):
+    if len(parent_dir) == 0:
+        raise HTTPException(400,detail="Directory can't be empty")
+    if not Path(parent_dir).exists():
+     raise HTTPException(status_code=400, detail=f"This directory '{parent_dir}' not exists!")
+
+    file_path = 'data.json'
+    if os.path.getsize(file_path) == 0: 
+        data = {}
+    else:
+        with open(file_path, 'r') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {}
+
+    data['parent_directory'] = parent_dir
+
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
+    return data.get('parent_dir')
+
 def getParentDirectory():
     with open("data.json") as f:
         data = json.load(f)
@@ -26,6 +49,7 @@ def getDirectoriesList():
             directories.append({
                 "name": d.name,
                 "parent_dir":parent_dir,
+                "parent_dir_name":os.path.basename(parent_dir),
                 "path": sub_dir_path,
                 "git_branches": get_git_branches(sub_dir_path),
                 "herd_link":herd_link,

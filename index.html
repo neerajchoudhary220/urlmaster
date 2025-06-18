@@ -36,12 +36,13 @@
           <h4 class="mb-0 me-auto">
             Directories With Git Branch <i class="fa fa-chain"></i>
           </h4>
-          <button
-            class="btn btn-warning text-white"
-            id="add_parent_directory_btn"
-          >
-            <i class="fa fa-folder text-success"></i> Add Parent Directory
-          </button>
+          <div class="bg-white rounded border px-3" >
+            <i class="fa fa-folder text-warning"></i> <span class="text-primary" style="cursor: pointer;" id="open-parent-dir" data-dir_path="">Sembark</span>
+            <button class="btn btn-success btn-sm ms-3" id="add_parent_directory_btn">
+            <i class="fa fa-pencil text-white" ></i>
+            </button>
+          </div>
+          
           <div class="row d-none" id="add_parent_directory_group">
             <div class="col-8">
               <input
@@ -55,6 +56,11 @@
             <div class="col-2">
               <button class="btn btn-warning text-white" type="button" id="add">
                 Add
+              </button>
+            </div>
+            <div class="col-2">
+              <button class="btn btn-danger text-white" type="button" id="close-add-parent-dir">
+                <i class="fa fa-close text-white"></i>
               </button>
             </div>
           </div>
