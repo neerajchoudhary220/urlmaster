@@ -4,6 +4,8 @@ import platform
 from pathlib import Path
 import webbrowser
 import socket
+import signal
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 INSTALL_DIR = BASE_DIR / "install"
 STATIC_DIR = BASE_DIR / "public"
@@ -66,7 +68,7 @@ def is_port_in_use(port: int) -> bool:
 def run_fastapi():
     port = 8090
     if is_port_in_use(port):
-        print(f"⚠️ FastAPI already running on http://127.0.0.1:{port}")
+        # print(f"⚠️ FastAPI already running on http://127.0.0.1:{port}")
         return
 
     print(f"🚀 Starting FastAPI on http://127.0.0.1:{port} ...")
@@ -78,9 +80,36 @@ def run_fastapi():
         "--reload"
     ], cwd=BASE_DIR)
     print("✅ FastAPI started in background.")
-    
+def get_pid_on_port(port: int) -> int | None:
+    """Find the PID using the given port (macOS/Linux only)"""
+    try:
+        result = subprocess.check_output(
+            ["lsof", "-i", f":{port}"], stderr=subprocess.DEVNULL
+        ).decode()
+        lines = result.strip().split("\n")
+        if len(lines) > 1:
+            pid = int(lines[1].split()[1])
+            return pid
+    except Exception:
+        return None
+
+def kill_process_on_port(port: int):
+    pid = get_pid_on_port(port)
+    if pid:
+        print(f"🔪 Killing process {pid} using port {port}...")
+        os.kill(pid, signal.SIGKILL)
+        # print("✅ Port cleared.")
+    # else:
+    #     print(f"⚠️ No process found on port {port}.")  
+        
 def run_frontend():
-    subprocess.Popen(["python", "-m", "http.server", "8080"], cwd=STATIC_DIR)
+    port = 8080
+    if is_port_in_use(port):
+        kill_process_on_port(port)
+
+    print(f"🚀 Starting frontend on http://127.0.0.1:{port} ...")
+    subprocess.Popen(["python", "-m", "http.server", str(port)], cwd=STATIC_DIR)
+    # print("✅ Frontend started in background.")
 
 def open_browser():
     webbrowser.open("http://localhost:8080")
