@@ -1,21 +1,23 @@
 from pathlib import Path
-from services.gitoperations import get_git_branches
-from services.herd import get_herd_link
-from services.cloudflared import get_tunnel
+from urlmaster.services.gitoperations import get_git_branches
+from urlmaster.services.herd import get_herd_link
+from urlmaster.services.cloudflared import get_tunnel
 from fastapi import HTTPException
 import shutil
 import json
 import platform
 import subprocess
 import os
-
+# data_file = str(resources.files("urlmaster.services").joinpath("data.json"))
+data_file = Path(__file__).parent.parent / "data.json"
+print(f"data file:{data_file}")
 def addParentDirectory(parent_dir:str):
     if len(parent_dir) == 0:
         raise HTTPException(400,detail="Directory can't be empty")
     if not Path(parent_dir).exists():
      raise HTTPException(status_code=400, detail=f"This directory '{parent_dir}' not exists!")
 
-    file_path = 'data.json'
+    file_path = data_file
     if os.path.getsize(file_path) == 0: 
         data = {}
     else:
@@ -33,7 +35,7 @@ def addParentDirectory(parent_dir:str):
     return data.get('parent_dir')
 
 def getParentDirectory():
-    with open("data.json") as f:
+    with open(data_file) as f:
         data = json.load(f)
     return data.get('parent_directory')
 

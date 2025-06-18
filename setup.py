@@ -5,10 +5,11 @@ setup(
     version="1.0",
     description="CLI tool to launch FastAPI + static frontend with system service installation",
     author="Neeraj Choudhary",
-    packages=find_packages(include=["urlmaster", "urlmaster.*", "services", "services.*"]),
-    
+    packages=find_packages(include=["urlmaster", "urlmaster.*"]),  # ✅ No need to include "services" separately
+
     package_data={
         "urlmaster": ["install/*.template", "public/*", "main.py"],
+        "urlmaster.services": ["*.json"],  # ✅ Include JSON files in services subpackage
     },
     
     include_package_data=True,
@@ -20,10 +21,10 @@ setup(
     ],
 
     entry_points={
-        "console_scripts": [
-            "urlmaster = urlmaster.cli:main"
-        ]
-    },
+    "console_scripts": [
+        "urlmaster = urlmaster.cli:app"  # ✅ FIXED
+    ]
+},
 
     classifiers=[
         "Programming Language :: Python :: 3",

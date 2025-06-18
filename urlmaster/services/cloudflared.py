@@ -6,8 +6,10 @@ import os
 import signal
 from fastapi import HTTPException
 import re
+import importlib.resources as resources
+from pathlib import Path
+TUNNELS_FILE = Path(__file__).parent.parent /"active_tunnels.json"
 
-TUNNELS_FILE = "active_tunnels.json"
 
 def get_cloudflared_public_url(url:str):
     domain = re.sub(r'^https?://', '', url).strip('/')
@@ -145,3 +147,34 @@ def replace_env_values(dir_path:str, new_domain:str):
 
     with open(env_path, "w") as f:
         f.writelines(updated_lines)
+
+def kill_all_tunnels():
+    if not os.path.exists(TUNNELS_FILE):
+        print("No active tunnels found.")
+        return
+
+    with open(TUNNELS_FILE, "r") as f:
+        try:
+            tunnels = json.load(f)
+        except json.JSONDecodeError:
+            print("Tunnel file is corrupted or empty.")
+            return
+
+    if not tunnels:
+        print("No tunnels to kill.")
+        return
+
+    for tunnel in tunnels:
+        try:
+            os.kill(tunnel["pid"], signal.SIGTERM)
+            print(f"Killed tunnel: {tunnel['herd_link']} (PID: {tunnel['pid']})")
+        except ProcessLookupError:
+            print(f"⚠️ Process already dead for: {tunnel['herd_link']}")
+        except Exception as e:
+            print(f"Error killing process {tunnel['pid']}: {e}")
+
+    # Clear the tunnels file
+    with open(TUNNELS_FILE, "w") as f:
+        json.dump([], f)
+
+    print("✅ All tunnels terminated.")

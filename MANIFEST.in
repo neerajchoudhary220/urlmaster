@@ -1,0 +1,3 @@
+recursive-include urlmaster/services *.json
+recursive-include urlmaster/public *
+recursive-include urlmaster/install *.template

@@ -1,8 +1,16 @@
 import typer
-from urlmaster import runner
 import json
 from pathlib import Path
 import os
+
+from urlmaster import runner
+import importlib.resources as resources
+from urlmaster.services import cloudflared
+
+BASE_DIR = Path(resources.files("urlmaster"))
+data_file = BASE_DIR/"data.json"
+
+
 __app_name__ = "urlmaster"
 __version__ = "1.0.0"
 
@@ -11,8 +19,10 @@ app = typer.Typer(
     add_completion=False
 )
 
+
+    
 def addParentDirectory():
-    file_path = 'data.json'
+    file_path = data_file
     file = Path(file_path)
 
     # Check if file doesn't exist or is empty
@@ -41,19 +51,13 @@ def main(
         None, "--version", "-v", help="Show the URL Master version and exit"
     )
 ):
-    """\033[92m
-
-    👋 Welcome to URL Master CLI!
-
-    Use this tool to run or install FastAPI + frontend services as a system service.
-    \033[0m"""
     if version:
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
 
-    typer.echo("\033[92m🙏 Welcome to URL Master CLI!\033[0m")
-    typer.echo("\033[92m📦 A tool to manage your Laravel Project With Git Branch to share different URL\033[0m")
-    typer.echo("ℹ️  Use '--help' to see the full command list.")
+    # typer.echo("\033[92m🙏 Welcome to URL Master CLI!\033[0m")
+    # typer.echo("\033[92m📦 A tool to manage your Laravel Project With Git Branch to share different URL\033[0m")
+    # typer.echo("ℹ️  Use '--help' to see the full command list.")
 
 @app.command()
 def install_service():
@@ -63,15 +67,22 @@ def install_service():
 @app.command()
 def neeraj():
     """Test command"""
-    print("✅ Working!")
+    typer.echo("✅ Working!")
+
+
 
 @app.command()
 def start():
-    """Start URl Master"""
+    """Start URL Master"""
     addParentDirectory()
     runner.run_fastapi()
     runner.run_frontend()
     runner.open_browser()
 
+@app.command()
+def stop():
+    """Stop All tunnel and service"""
+    cloudflared.kill_all_tunnels()
+    
 if __name__ == "__main__":
     app()

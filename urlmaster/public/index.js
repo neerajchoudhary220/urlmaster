@@ -64,7 +64,7 @@ function fetchList() {
     </div>`;
         }
         const regenerate_public_url = dir.public_url
-          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-dir-path="${dir.path} data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
+          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-dir-path="${dir.path}" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
           : "--";
         const delete_public_url = dir.public_url
           ? `<button class="btn btn-danger ms-2 delete-url-btn text-white" data-herd_link="${dir.herd_link}"><i class="fa fa-trash text-white"></i></button>`

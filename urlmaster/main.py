@@ -2,11 +2,10 @@ from fastapi import FastAPI,HTTPException
 from pydantic import BaseModel,validator
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from services.directory import getDirectoriesList,cloneDirectory,open_directory,addParentDirectory
-from services.gitoperations import switch_branch
-from services.herd import link_with_herd
-from services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url,replace_env_values
-from fastapi.staticfiles import StaticFiles
+from urlmaster.services.directory import getDirectoriesList,cloneDirectory,open_directory,addParentDirectory
+from urlmaster.services.gitoperations import switch_branch
+from urlmaster.services.herd import link_with_herd
+from urlmaster.services.cloudflared import get_cloudflared_public_url,kill_tunnel_by_url,replace_env_values
 import os
 app = FastAPI()
 # public_dir = Path(__file__).resolve().parent / "public"

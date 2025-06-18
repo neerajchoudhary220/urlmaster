@@ -109,7 +109,8 @@ def run_frontend():
         kill_process_on_port(port)
 
     print(f"🚀 Starting frontend on http://127.0.0.1:{port} ...")
-    subprocess.Popen(["python3", "-m", "http.server", str(port)], cwd=STATIC_DIR)
+    subprocess.Popen(["python3", "-m", "http.server", str(port)], cwd=STATIC_DIR,stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL)
     # print("✅ Frontend started in background.")
 
 def open_browser():
