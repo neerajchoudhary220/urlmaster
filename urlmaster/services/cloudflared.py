@@ -12,11 +12,12 @@ def get_cloudflared_public_url(url: str):
     print(f"domain is {domain}")
 
     process = subprocess.Popen(
-        ["cloudflared", "tunnel", "--url", "http://127.0.0.1:80", "--http-host-header", domain],
+        ["cloudflared", "tunnel", "--url", "http://127.0.0.1:80", "--no-autoupdate", "--loglevel", "info", "--http-host-header", domain],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True
     )
+
 
     public_url = None
     for line in process.stdout:
