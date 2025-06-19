@@ -6,7 +6,6 @@ import webbrowser
 import socket
 import signal
 import importlib.resources as resources
-import shutil
 
 BASE_DIR = Path(resources.files("urlmaster"))
 
@@ -73,20 +72,16 @@ def is_port_in_use(port: int) -> bool:
 def run_fastapi():
     port = 8090
     if is_port_in_use(port):
-        # print(f"⚠️ FastAPI already running on http://127.0.0.1:{port}")
         return
 
-    # print(f"🚀 Starting FastAPI on http://127.0.0.1:{port} ...")
-    uvicorn_path = shutil.which("uvicorn")
-    
     subprocess.Popen([
-        uvicorn_path, 
+        sys.executable, 
+        "-m", "uvicorn", 
         "main:app",  
         "--host", "127.0.0.1",
         "--port", str(port),
         "--reload"
-    ], cwd=BASE_DIR,stdout=subprocess.DEVNULL,
-    stderr=subprocess.DEVNULL)
+    ], cwd=BASE_DIR, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     # print("✅ FastAPI started in background.")
 def get_pid_on_port(port: int) -> int | None:
     """Find the PID using the given port (macOS/Linux only)"""
