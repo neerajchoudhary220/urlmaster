@@ -6,8 +6,8 @@ import os
 import signal
 from fastapi import HTTPException
 import re
-import importlib.resources as resources
 from pathlib import Path
+import requests
 TUNNELS_FILE = Path(__file__).parent.parent /"active_tunnels.json"
 
 
@@ -21,17 +21,29 @@ def get_cloudflared_public_url(url:str):
         stderr=subprocess.STDOUT,
         text=True
     )
+    public_url = None
     for line in process.stdout:
         match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
         if match:
             public_url = match.group(1)
-            # print("\n🌐 Public Tunnel URL:", public_url)
-
-            # ✅ Save URL and PID
-            tunnel_info = {"public_url": public_url, "pid": process.pid,"herd_link":url}
-            save_tunnel(tunnel_info)
+            print(f"🌐 Public Tunnel URL found: {public_url}")
             break
-    return tunnel_info['public_url']
+
+    if not public_url:
+        raise HTTPException(400,detail= "Public URL not found in cloudflared output.")
+
+    try:
+        response = requests.get(public_url, timeout=5)
+        if response.status_code == 200:
+            tunnel_info = {"public_url": public_url, "pid": process.pid, "herd_link": url}
+            save_tunnel(tunnel_info)
+            return public_url
+        else:
+            process.terminate()
+            raise HTTPException(400,detail=f" Tunnel reachable but returned HTTP {response.status_code}")
+    except requests.RequestException as e:
+        process.terminate()
+        raise HTTPException(400,detail=f"❌ Failed to connect to public URL: {e}")
 
 def save_tunnel(tunnel_info: dict) -> str:
     """
@@ -89,7 +101,7 @@ def kill_tunnel_by_url(herd_link: str):
                 os.kill(tunnel["pid"], signal.SIGTERM)
                 killed = True
             except ProcessLookupError:
-                HTTPException(400,detail=f"⚠️ Process already dead for: {tunnel['herd_link']}")
+               raise HTTPException(400,detail=f"⚠️ Process already dead for: {tunnel['herd_link']}")
         else:
             updated_tunnels.append(tunnel)
 
