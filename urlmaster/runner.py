@@ -6,6 +6,7 @@ import webbrowser
 import socket
 import signal
 import importlib.resources as resources
+import sys
 
 BASE_DIR = Path(resources.files("urlmaster"))
 
