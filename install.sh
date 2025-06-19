@@ -46,4 +46,5 @@ echo "🔗 Linking $BIN_PATH → $LINK_PATH"
 sudo ln -s "$BIN_PATH" "$LINK_PATH"
 
 echo -e "\033[92m✅ URL Master installed Successfully!\033[0m"
-echo "👉 Now you can run: urlmaster start"
+
+urlmaster

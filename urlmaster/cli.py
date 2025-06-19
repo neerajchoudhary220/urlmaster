@@ -1,11 +1,16 @@
 import typer
 import json
 from pathlib import Path
-import os
+import random
 
 from urlmaster import runner
 import importlib.resources as resources
 from urlmaster.services import cloudflared
+
+import getpass
+
+def getusername():
+    return getpass.getuser()
 
 BASE_DIR = Path(resources.files("urlmaster"))
 data_file = BASE_DIR/"data.json"
@@ -31,21 +36,21 @@ def addParentDirectory():
 
     # Check if file doesn't exist or is empty
     if not file.exists() or file.stat().st_size == 0:
-        parent_dir = input("Enter Parent Directory Path:\n").strip()
-
+        typer.secho(" 🗂️ Enter Parent Directory Path", fg=typer.colors.GREEN)
+        parent_dir = input("\n").strip()
         if not parent_dir:
-            print("\033[91m❌ Directory can't be empty\033[0m")
+            typer.secho(f" ⚠️ This directory '{parent_dir}' does not exist!", fg=typer.colors.RED)
             return
 
         if not Path(parent_dir).exists():
-            print(f"❌ This directory '{parent_dir}' does not exist!")
-            return
+            typer.secho(f" ⚠️ This directory '{parent_dir}' does not exist!", fg=typer.colors.RED)
+            return 
 
         data = {'parent_directory': parent_dir}
 
         with open(file_path, 'w') as f:
             json.dump(data, f, indent=4)
-            print(f"✅ Data saved to {file_path}")
+            typer.secho(f"✅ Data saved to {file_path}", fg=typer.colors.GREEN)
    
         
         
@@ -59,11 +64,12 @@ def main(
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
     typer.secho(ASCII_LOGO, fg=typer.colors.CYAN)
+    typer.secho(f"Welcome {getusername()}",fg=typer.colors.GREEN,bold=True)
     
     
 
 
-@app.command()
+# @app.command()
 # def install_service():
 #     """Install URL Master as a background service"""
 #     typer.secho("🔓 Hacker Mode Activated", fg=typer.colors.GREEN, bold=True)
@@ -72,9 +78,22 @@ def main(
 #     runner.install_service()
 
 @app.command()
-def neeraj():
+def test():
     """Test command"""
-    typer.echo("✅ Working!")
+    greetings = {
+    "english": ["Hello", "Hi", "Hey", "Greetings", "Good day"],
+    "hindi": ["Namaste", "Namaskar", "Pranam"],
+    "fun": ["Yo!", "What's up?", "Howdy!", "Sup?", "Heya!"]
+}
+
+    # Pick a random language
+    lang = random.choice(list(greetings.keys()))
+
+    # Pick a random greeting from that language
+    greeting = random.choice(greetings[lang])
+
+    # print(f"{greeting}, Neeraj! ({lang})")
+    typer.secho(f"✅ ", fg=typer.colors.GREEN)
 
 
 
