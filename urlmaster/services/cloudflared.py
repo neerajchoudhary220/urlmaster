@@ -1,7 +1,8 @@
 # start_tunnel.py
-import re,requests,os,signal,time,json,subprocess
+import re,requests,os,signal,time,json,subprocess,shutil
 from fastapi import HTTPException
 from pathlib import Path
+time
 TUNNELS_FILE = Path(__file__).parent.parent /"active_tunnels.json"
 
 
@@ -10,9 +11,9 @@ def get_cloudflared_public_url(url: str):
 
     domain = re.sub(r'^https?://', '', url).strip('/')
     print(f"domain is {domain}")
-
+    CLOUDFLARED_PATH = shutil.which("cloudflared") or"/opt/homebrew/bin/cloudflared"
     process = subprocess.Popen(
-        ["cloudflared", "tunnel", "--url", "http://127.0.0.1:80", "--http-host-header", domain],
+        [CLOUDFLARED_PATH, "tunnel", "--url", "http://127.0.0.1:80", "--http-host-header", domain],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True
@@ -23,30 +24,20 @@ def get_cloudflared_public_url(url: str):
         match = re.search(r'(https://[a-zA-Z0-9-]+\.trycloudflare\.com)', line)
         if match:
             public_url = match.group(1)
-            print(f"🌐 Tunnel URL: {public_url}")
             break
 
     if not public_url:
         process.terminate()
-        return {"error": "❌ Tunnel URL not found."}
+        raise HTTPException(400,detail="❌ Tunnel URL not found.")
+    time.sleep(3)
+    res = requests.get(public_url,verify=False)
+    if res.status_code==200:
+        tunnel_info = {"public_url": public_url, "pid": process.pid, "herd_link": url}
+        save_tunnel(tunnel_info)
+        return public_url
+    else:
+        raise HTTPException(400,'Cloudflared tunnel issue')
 
-    # Retry for up to 15 seconds for DNS to propagate
-    for attempt in range(15):
-        try:
-            print(f"🔁 Checking tunnel (attempt {attempt+1}) ...")
-            response = requests.get(public_url, timeout=5)
-            if response.status_code == 200:
-                tunnel_info = {"public_url": public_url, "pid": process.pid, "herd_link": url}
-                save_tunnel(tunnel_info)
-                return public_url
-            else:
-                print(f"⚠️ HTTP {response.status_code} received")
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Attempt {attempt+1}: {e}")
-        time.sleep(1.5)
-
-    process.terminate()
-    return {"error": f"❌ Tunnel {public_url} not reachable after retries."}
 
 def save_tunnel(tunnel_info: dict) -> str:
     """

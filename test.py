@@ -1,13 +1,7 @@
-import os,subprocess
-
-def kill_pid():
-    ports =[8080,8090]
-    for port in ports:
-        command=f"lsof -i :{port} -t"
-        result= subprocess.run(command,shell=True,stdout=subprocess.PIPE, text=True)
-        pids = result.stdout.strip().splitlines()
-        for pid in pids:
-            os.kill(int(pid),9)
-
-
-    
+import socket
+try:
+    print("Resolving test domain...")
+    ip = socket.gethostbyname("trycloudflare.com")
+    print(f"✅ DNS works: {ip}")
+except Exception as e:
+    print(f"❌ DNS failed: {e}")
