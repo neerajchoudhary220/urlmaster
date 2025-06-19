@@ -17,7 +17,8 @@ ASCII_LOGO = r"""██╗   ██╗██████╗ ██╗           
 ██║   ██║██╔══██╗██║           ████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗
 ██║   ██║██████╔╝██║     █████╗██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝
 ██║   ██║██╔══██╗██║     ╚════╝██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗
-╚██████╔╝██║  ██║███████╗      ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║"""
+╚██████╔╝██║  ██║███████╗      ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║ 
+"""
 app = typer.Typer(
     help="📦 URL Master CLI — Manage FastAPI + frontend services",
     add_completion=False
@@ -59,12 +60,17 @@ def main(
         typer.echo(f"{__app_name__} v{__version__}")
         raise typer.Exit()
     typer.secho(ASCII_LOGO, fg=typer.colors.CYAN)
+    
+    
 
 
 @app.command()
-def install_service():
-    """Install URL Master as a background service"""
-    runner.install_service()
+# def install_service():
+#     """Install URL Master as a background service"""
+#     typer.secho("🔓 Hacker Mode Activated", fg=typer.colors.GREEN, bold=True)
+#     typer.secho("⚠️ Access Denied", fg=typer.colors.RED, bold=True)
+#     typer.secho("💡 Tip: Use --help for options", fg=typer.colors.YELLOW)
+#     runner.install_service()
 
 @app.command()
 def neeraj():
@@ -76,6 +82,7 @@ def neeraj():
 @app.command()
 def start():
     """Start URL Master"""
+    typer.secho(" Please follow below URL to manage URL-MASTER", fg=typer.colors.GREEN, bold=True)
     addParentDirectory()
     runner.run_fastapi()
     runner.run_frontend()
