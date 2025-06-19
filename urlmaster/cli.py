@@ -76,7 +76,16 @@ def main(
 #     typer.secho("⚠️ Access Denied", fg=typer.colors.RED, bold=True)
 #     typer.secho("💡 Tip: Use --help for options", fg=typer.colors.YELLOW)
 #     runner.install_service()
-
+@app.command()
+def restart():
+    """Restart the URL-Master"""
+    runner.kill_port()
+    addParentDirectory()
+    runner.run_fastapi()
+    typer.secho(" Please follow below URL to manage URL-MASTER", fg=typer.colors.GREEN, bold=True)
+    runner.run_frontend()
+    runner.open_browser()
+    
 @app.command()
 def test():
     """Test command"""
@@ -110,6 +119,8 @@ def start():
 def stop():
     """Stop All tunnel and service"""
     cloudflared.kill_all_tunnels()
+    runner.kill_port()
+
     
 if __name__ == "__main__":
     app()
