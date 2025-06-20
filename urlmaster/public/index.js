@@ -3,6 +3,27 @@ const open_parent_dir = $("#open-parent-dir");
 const getHerdLink = (selector) => {
   return selector.data("herd_link");
 };
+
+const getRequest = (method_, url_) => {};
+function showLoading() {
+  document.getElementById("hacker-loader").classList.remove("d-none");
+}
+
+function hideLoading() {
+  document.getElementById("hacker-loader").classList.add("d-none");
+}
+
+function showHackerAlert(message = "Something happened!") {
+  const alertBox = document.getElementById("hacker-alert");
+  const messageBox = document.getElementById("hacker-alert-message");
+  messageBox.textContent = message;
+  alertBox.classList.remove("d-none");
+}
+
+function hideHackerAlert() {
+  document.getElementById("hacker-alert").classList.add("d-none");
+}
+
 const copyLink = (contents) => {
   // Create a temporary input element
   var $temp = $("<input>");
@@ -10,12 +31,15 @@ const copyLink = (contents) => {
   $temp.val(`${contents}`).select();
   document.execCommand("copy");
   $temp.remove();
-  alert("Text copied to clipboard!");
+  showHackerAlert("Copied Successfully!");
 };
 function fetchList() {
   $.ajax({
     method: "GET",
     url: `${base_url}/directory/`,
+    beforeSend: function () {
+      showLoading();
+    },
     success: function (response) {
       const directories = response.data.directories;
       const tbody = $("#directory-table tbody");
@@ -42,14 +66,15 @@ function fetchList() {
           .join("")}
     </select>
 `;
-        const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span style="cursor:pointer;" class="text-primary open-directory" data-dir_path="${dir.path}">${dir.name}</span> <i class="fa fa-folder-open text-warning"></i></div> <button class="btn btn-sm btn-secondary text-white clone-directory-btn" data-dir_path="${dir.path}"><i class="fa fa-clone text-white"></i> Clone</button></div>`;
+        const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span style="cursor:pointer;" class="text-cyan open-directory ellipsis" data-dir_path="${dir.path}">${dir.name}</span> <i class="fa fa-folder-open text-cyan"></i></div> </div>`;
+        const clone_directory_btn = `<button class="btn btn-info text-cyan clone-directory-btn ms-2" data-dir_path="${dir.path}"><i class="fa fa-window-restore text-cyan"></i></button>`;
         const herd_link = dir.herd_link
-          ? `<div class="d-flex justify-content-start"><a href="${dir.herd_link}" target="_blank" class="me-auto">${dir.herd_link}</a><button class="btn btn-sm btn-secondary copy-herd-link-btn"><i class="fa fa-clone"></i></button></div>`
-          : `<button class="btn btn-primary text-white add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
+          ? `<div class="d-flex justify-content-start"><a href="${dir.herd_link}" target="_blank" class="me-auto ellipsis text-cyan">${dir.herd_link}</a> <button class="btn btn-sm btn-secondary copy-herd-link-btn"><i class="fa fa-clone"></i></button></div>`
+          : `<button class="btn btn-primary text-cyan add-with-herd-btn" data-path="${dir.path}">Add Herd Link</button>`;
         let generate_url = "";
 
         if (dir.public_url) {
-          generate_url = `<div class="d-flex justify-content-start"><a href="${dir.public_url}" target="_blank" class="me-auto">${dir.public_url}</a> <button class="btn btn-sm btn-secondary copy-public-url-btn"><i class="fa fa-clone"></i></button></div>`;
+          generate_url = `<div class="d-flex justify-content-start"><a href="${dir.public_url}" target="_blank" class="me-auto ellipsis text-cyan">${dir.public_url}</a> <button class="btn btn-sm btn-secondary copy-public-url-btn"><i class="fa fa-clone"></i></button></div>`;
         } else if (dir.herd_link) {
           generate_url = `
     <div class="btn-group">
@@ -64,10 +89,10 @@ function fetchList() {
     </div>`;
         }
         const regenerate_public_url = dir.public_url
-          ? `<button class="btn btn-info text-white regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-dir-path="${dir.path}" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
-          : "--";
+          ? `<button class="btn btn-info text-cyan regenerate-public-url-btn" data-bs-toggle="popover" data-bs-trigger="hover" title="Regenerate Public URL" data-dir-path="${dir.path}" data-herd_link="${dir.herd_link}"><i class="fa fa-exchange"></i></button>`
+          : " ";
         const delete_public_url = dir.public_url
-          ? `<button class="btn btn-danger ms-2 delete-url-btn text-white" data-herd_link="${dir.herd_link}"><i class="fa fa-trash text-white"></i></button>`
+          ? `<button class="btn btn-info ms-2 delete-url-btn text-cyan" data-herd_link="${dir.herd_link}"><i class="fa fa-ban text-cyan"></i></button>`
           : "";
         const row = `
                     <tr>
@@ -77,7 +102,7 @@ function fetchList() {
                         <td>${herd_link}</td>
                         <td><div class="w-75">${generate_url}</div></td>
                         <td>
-                          <div class='d-flex w-100'>${regenerate_public_url} ${delete_public_url}</div>
+                          <div class='d-flex w-100'>${regenerate_public_url} ${delete_public_url} ${clone_directory_btn}</div>
                         </td>
                     </tr>
                 `;
@@ -86,7 +111,11 @@ function fetchList() {
       });
     },
     error: function (err) {
-      console.error("Failed to load directories:", err);
+      // console.error("Failed to load directories:", err);
+      showHackerAlert(err);
+    },
+    complete: function () {
+      hideLoading();
     },
   });
 }
@@ -98,23 +127,20 @@ function generatePublicUrl(this_, herd_link) {
       "data-dir-path"
     )}`,
     beforeSend: function () {
-      const waiting_msg = `<div class="alert alert-warning p-0 p-1 mt-3 w-75" role="alert">
- Please wait...
-</div`;
-      this_.addClass("d-none");
-      this_.parent().html(waiting_msg);
+      showLoading();
     },
     success: function (response) {
-      alert(response.msg);
+      showHackerAlert(response.msg);
     },
 
     error: function (xhr) {
       if (xhr.responseJSON && xhr.responseJSON.detail) {
         const error_msg = xhr.responseJSON.detail;
-        alert(error_msg);
+        showHackerAlert(response.msg);
       }
     },
     complete: function () {
+      hideLoading();
       window.location.reload();
     },
   });
@@ -146,12 +172,13 @@ $(document).ready(function () {
       data: JSON.stringify(data_),
       contentType: "application/json",
       success: function (response) {
-        alert("Successfully saved");
+        // alert("Successfully saved");
+        showHackerAlert("Successfully Saved!");
       },
       error: function (xhr) {
         if (xhr.responseJSON && xhr.responseJSON.detail) {
           const error_msg = xhr.responseJSON.detail;
-          alert(error_msg);
+          showHackerAlert(error_msg);
         } else {
         }
       },
@@ -190,12 +217,12 @@ $(document).ready(function () {
       url: `${base_url}/herd/?directory_path=${dir_path}`,
 
       success: function (response) {
-        alert(response.msg);
+        showHackerAlert(response.msg);
       },
       error: function (xhr) {
         if (xhr.responseJSON && xhr.responseJSON.detail) {
           const error_msg = xhr.responseJSON.detail;
-          alert(error_msg);
+          showHackerAlert(error_msg);
         }
       },
       complete: function () {
@@ -223,11 +250,7 @@ $(document).ready(function () {
       method: "DELETE",
       url: `${base_url}/cloudflared/?herd_link=${getHerdLink(this_)}`,
       beforeSend: function () {
-        const waiting_msg = `<div class="alert alert-warning p-0 p-1 mt-3 w-75" role="alert">
- Please wait...
-</div`;
-        this_.addClass("d-none");
-        this_.parent().html(waiting_msg);
+        showLoading();
       },
       success: function (response) {
         alert(response.msg);
@@ -239,6 +262,7 @@ $(document).ready(function () {
         }
       },
       complete: function () {
+        hideLoading();
         window.location.reload();
       },
     });
