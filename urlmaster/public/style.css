@@ -1,12 +1,15 @@
+      :root{
+        --cyan-color:#00ffff;
+      }
       body {
         background-color: #0d1117;
         font-family: "Share Tech Mono", monospace;
-        color: #00ffff;
+        color: var(--cyan-color);
       }
 
       .card {
         background-color: #0a0f1a;
-        border: 1px solid #00ffff;
+        border: 1px solid var(--cyan-color);
         border-radius: 1rem;
         box-shadow: 0 0 20px #00ffff88;
         overflow: hidden;

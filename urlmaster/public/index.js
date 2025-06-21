@@ -3,8 +3,39 @@ const open_parent_dir = $("#open-parent-dir");
 const getHerdLink = (selector) => {
   return selector.data("herd_link");
 };
+const reloadWindow = () => {
+  window.location.reload();
+};
+function getRequest({
+  url,
+  onSuccess = () => {},
+  onError = (errorMsg) => showHackerAlert(errorMsg),
+  onComplete = () => {},
+  showLoader = true,
+}) {
+  $.ajax({
+    method: "GET",
+    url: url,
+    beforeSend: function () {
+      if (showLoader) showLoading();
+    },
+    success: function (res) {
+      onSuccess(res);
+    },
+    error: function (xhr) {
+      let errorMsg = "An error occurred";
+      if (xhr.responseJSON && xhr.responseJSON.detail) {
+        errorMsg = xhr.responseJSON.detail;
+      }
+      onError(errorMsg);
+    },
+    complete: function () {
+      if (showLoader) hideLoading();
+      onComplete();
+    },
+  });
+}
 
-const getRequest = (method_, url_) => {};
 function showLoading() {
   document.getElementById("hacker-loader").classList.remove("d-none");
 }
@@ -13,11 +44,21 @@ function hideLoading() {
   document.getElementById("hacker-loader").classList.add("d-none");
 }
 
-function showHackerAlert(message = "Something happened!") {
+function showHackerAlert(message = "Something happened!", callback = () => {}) {
   const alertBox = document.getElementById("hacker-alert");
   const messageBox = document.getElementById("hacker-alert-message");
+  const okButton = document.getElementById("hacker-alert-ok");
+
   messageBox.textContent = message;
   alertBox.classList.remove("d-none");
+
+  const handleClick = () => {
+    hideHackerAlert();
+    callback();
+    okButton.removeEventListener("click", handleClick); // Clean up
+  };
+
+  okButton.addEventListener("click", handleClick);
 }
 
 function hideHackerAlert() {
@@ -33,15 +74,13 @@ const copyLink = (contents) => {
   $temp.remove();
   showHackerAlert("Copied Successfully!");
 };
+
+//Fetch List
 function fetchList() {
-  $.ajax({
-    method: "GET",
+  getRequest({
     url: `${base_url}/directory/`,
-    beforeSend: function () {
-      showLoading();
-    },
-    success: function (response) {
-      const directories = response.data.directories;
+    onSuccess: function (res) {
+      const directories = res.data.directories;
       const tbody = $("#directory-table tbody");
       tbody.empty();
 
@@ -110,38 +149,20 @@ function fetchList() {
         tbody.append(row);
       });
     },
-    error: function (err) {
-      // console.error("Failed to load directories:", err);
-      showHackerAlert(err);
-    },
-    complete: function () {
-      hideLoading();
-    },
   });
 }
 
+//Generate Public URL
 function generatePublicUrl(this_, herd_link) {
-  $.ajax({
-    method: "get",
+  getRequest({
     url: `${base_url}/cloudflared/?herd_link=${herd_link}&dir_path=${this_.attr(
       "data-dir-path"
     )}`,
-    beforeSend: function () {
-      showLoading();
+    onSuccess: function (res) {
+      showHackerAlert(res.msg);
     },
-    success: function (response) {
-      showHackerAlert(response.msg);
-    },
-
-    error: function (xhr) {
-      if (xhr.responseJSON && xhr.responseJSON.detail) {
-        const error_msg = xhr.responseJSON.detail;
-        showHackerAlert(response.msg);
-      }
-    },
-    complete: function () {
-      hideLoading();
-      window.location.reload();
+    onComplete: function () {
+      reloadWindow();
     },
   });
 }
@@ -187,48 +208,48 @@ $(document).ready(function () {
 
   // Change branch event delegation
   $(document).on("change", ".branch-dropdown", function (e) {
-    // Example: get selected value and data-path attribute
     const selectedBranch = $(this).val();
     const directoryPath = $(this).data("path");
-    $.ajax({
-      method: "get",
+    getRequest({
       url: `${base_url}/git/switch/?path=${directoryPath}&branch=${selectedBranch}`,
-      success: function (response) {
-        alert(response.msg);
+      onSuccess: function (res) {
+        showHackerAlert(res.msg);
       },
-      error: function (xhr) {
-        if (xhr.responseJSON && xhr.responseJSON.detail) {
-          console.error(xhr.responseJSON);
-          const error_msg = xhr.responseJSON.detail;
-          alert(error_msg);
-          window.location.reload();
-        } else {
-        }
-      },
+      onComplete: function () {},
     });
   });
 
   //Add with Herd
   $(document).on("click", ".add-with-herd-btn", function () {
     const dir_path = $(this).data("path");
-
-    $.ajax({
-      method: "get",
+    getRequest({
       url: `${base_url}/herd/?directory_path=${dir_path}`,
-
-      success: function (response) {
-        showHackerAlert(response.msg);
+      onSuccess: function (res) {
+        showHackerAlert(res.msg, function () {
+          reloadWindow();
+        });
       },
-      error: function (xhr) {
-        if (xhr.responseJSON && xhr.responseJSON.detail) {
-          const error_msg = xhr.responseJSON.detail;
-          showHackerAlert(error_msg);
-        }
-      },
-      complete: function () {
-        window.location.reload();
+      onComplete: function () {
+        // reloadWindow();
       },
     });
+    // $.ajax({
+    //   method: "get",
+    //   url: `${base_url}/herd/?directory_path=${dir_path}`,
+
+    //   success: function (response) {
+    //     showHackerAlert(response.msg);
+    //   },
+    //   error: function (xhr) {
+    //     if (xhr.responseJSON && xhr.responseJSON.detail) {
+    //       const error_msg = xhr.responseJSON.detail;
+    //       showHackerAlert(error_msg);
+    //     }
+    //   },
+    //   complete: function () {
+    //     window.location.reload();
+    //   },
+    // });
   });
 
   //Generate Public URL
