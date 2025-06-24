@@ -1,5 +1,5 @@
 from pathlib import Path
-from urlmaster.services.gitoperations import get_git_branches
+from urlmaster.services.gitoperations import get_current_branch
 from urlmaster.services.herd import get_herd_link
 from urlmaster.services.cloudflared import get_tunnel
 from fastapi import HTTPException
@@ -52,7 +52,7 @@ def getDirectoriesList():
                 "parent_dir":parent_dir,
                 "parent_dir_name":os.path.basename(parent_dir),
                 "path": sub_dir_path,
-                "git_branches": get_git_branches(sub_dir_path),
+                "active_branch": get_current_branch(sub_dir_path),
                 "herd_link":herd_link,
                 "public_url":get_tunnel(herd_link)
             })

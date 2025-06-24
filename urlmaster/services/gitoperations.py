@@ -32,7 +32,19 @@ def get_git_branches(directory_path: str):
 
     except Exception as e:
         return []
-    
+ 
+def get_current_branch(directory_path: str ):
+    result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        cwd=directory_path,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    if result.returncode == 0:
+       return result.stdout.strip()
+    else:
+        return   
 def switch_branch(path:str, branch:str):
     path = Path(path) 
     if not path.exists():

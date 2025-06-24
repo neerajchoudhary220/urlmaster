@@ -88,23 +88,7 @@ function fetchList() {
         open_parent_dir
           .attr("data-dir_path", dir.parent_dir)
           .text(dir.parent_dir_name);
-        const branchDropdown = `
-    <select class="form-select form-select-sm w-75 branch-dropdown" data-path="${
-      dir.path
-    }">
-        ${dir.git_branches
-          .map(
-            (branch) => `
-                <option value="${branch.name}" ${
-              branch.active ? "selected" : ""
-            }>
-                    ${branch.name}
-                </option>
-            `
-          )
-          .join("")}
-    </select>
-`;
+        const active_branch = `<span>${dir.active_branch}</span>`;
         const directory = `<div class="d-flex justify-content-start"><div class="me-auto"><span style="cursor:pointer;" class="text-cyan open-directory ellipsis" data-dir_path="${dir.path}">${dir.name}</span> <i class="fa fa-folder-open text-cyan"></i></div> </div>`;
         const clone_directory_btn = `<button class="btn btn-info text-cyan clone-directory-btn ms-2" data-dir_path="${dir.path}"><i class="fa fa-window-restore text-cyan"></i></button>`;
         const herd_link = dir.herd_link
@@ -137,7 +121,7 @@ function fetchList() {
                     <tr>
                         <th scope="row">${index + 1}</th>
                         <td>${directory}</td>
-                        <td>${branchDropdown}</td>
+                        <td>${active_branch}</td>
                         <td>${herd_link}</td>
                         <td><div class="w-75">${generate_url}</div></td>
                         <td>
@@ -207,17 +191,17 @@ $(document).ready(function () {
   });
 
   // Change branch event delegation
-  $(document).on("change", ".branch-dropdown", function (e) {
-    const selectedBranch = $(this).val();
-    const directoryPath = $(this).data("path");
-    getRequest({
-      url: `${base_url}/git/switch/?path=${directoryPath}&branch=${selectedBranch}`,
-      onSuccess: function (res) {
-        showHackerAlert(res.msg);
-      },
-      onComplete: function () {},
-    });
-  });
+  // $(document).on("change", ".branch-dropdown", function (e) {
+  //   const selectedBranch = $(this).val();
+  //   const directoryPath = $(this).data("path");
+  //   getRequest({
+  //     url: `${base_url}/git/switch/?path=${directoryPath}&branch=${selectedBranch}`,
+  //     onSuccess: function (res) {
+  //       showHackerAlert(res.msg);
+  //     },
+  //     onComplete: function () {},
+  //   });
+  // });
 
   //Add with Herd
   $(document).on("click", ".add-with-herd-btn", function () {
